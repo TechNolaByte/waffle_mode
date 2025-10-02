@@ -11,8 +11,7 @@ import subprocess
 import pygame
 from pynput import keyboard, mouse
 
-GIF_BYTES = Path("assets\\overlay.gif").read_bytes()
-MP3_BYTES = Path("assets\\sound.mp3").read_bytes()
+from assets import GIF_BYTES, MP3_BYTES, ON_SOUND_BYTES
 
 def set_volume_30_percent():
     system = platform.system()
@@ -27,7 +26,7 @@ def set_volume_30_percent():
         pass
 
 class WaffleOverlay:
-    def __init__(self, gif_bytes, mp3_bytes):
+    def __init__(self, gif_bytes, mp3_bytes, on_sound_bytes):
         self.root = Tk()
         self.root.overrideredirect(True)
         self.width = self.root.winfo_screenwidth()
@@ -46,8 +45,11 @@ class WaffleOverlay:
         self.current_frame = 0
 
         pygame.mixer.init()
-        pygame.mixer.music.load(BytesIO(mp3_bytes))
-
+        set_volume_30_percent()
+        startup_sound = pygame.mixer.Sound(BytesIO(on_sound_bytes))
+        startup_sound.play()
+        self.sound = pygame.mixer.Sound(BytesIO(mp3_bytes))
+        
         self.kb_listener = keyboard.Listener(on_press=self.on_keyboard, suppress=True)
         self.mouse_listener = mouse.Listener(on_click=self.on_mouse, suppress=True)
         self.kb_listener.start()
@@ -67,7 +69,7 @@ class WaffleOverlay:
     def on_keyboard(self, key):
         try:
             if key == keyboard.Key.f15:
-                self.stop()
+                self.sound.stop()
             else:
                 self.play_sound()
         except AttributeError:
@@ -79,8 +81,8 @@ class WaffleOverlay:
 
     def play_sound(self):
         set_volume_30_percent()
-        pygame.mixer.music.stop()
-        pygame.mixer.music.play()
+        self.sound.stop()
+        self.sound.play()
 
     def stop(self):
         self.kb_listener.stop()
@@ -90,4 +92,4 @@ class WaffleOverlay:
         sys.exit()
 
 if __name__ == "__main__":
-    WaffleOverlay(GIF_BYTES, MP3_BYTES)
+    WaffleOverlay(GIF_BYTES, MP3_BYTES, ON_SOUND_BYTES)
