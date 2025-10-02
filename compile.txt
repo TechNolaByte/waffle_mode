@@ -1,0 +1,2 @@
+python .\temp.py
+pyinstaller --onefile --noconsole --name waffle_mode waffle_mode.py
